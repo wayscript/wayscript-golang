@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 )
 
 type ProcesssDetailResponse struct {
@@ -148,6 +150,15 @@ func GetUserByApplicationKey() (string, error) {
 
 }
 
-// func SendHttpTriggerResponse() {
+func SendHttpTriggerResponse(data url.Values, headers http.Header, statuscode int) err {
+	client := &http.Client{}
+	url := fmt.Sprintf("%s/webhooks/http-trigger/response/%s", os.Getenv("WAYSCRIPT_ORIGIN"), getProcessId())
+	req, err := http.NewRequest("POST", url, strings.NewReader(data.Encode()))
+	req.Header = headers
+	req.Response.StatusCode = statuscode
+	req.Header.Add("authorization", fmt.Sprintf("Bearer %s", os.Getenv("WAYSCRIPT_EXECUTION_USER_TOKEN")))
+	req.Header.Add("content-type", "application/json")
+	_, err = client.Do(req)
+	return err
 
-// }
+}
